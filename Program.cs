@@ -1,3 +1,23 @@
+using HoneyRaesAPI.Models;
+// using HoneyRaesAPI.Models.DTOs;
+
+List<Customer> customers = new List<Customer> {
+    new Customer { Id = 1, Name = "Alice", Address = "123 Oak st" },
+    new Customer { Id = 2, Name = "Sarah", Address = "76 Riverside ave" },
+    new Customer { Id = 3, Name = "James", Address = "2293 21st Ave NE" }
+};
+List<Employee> employees = new List<Employee> {
+    new Employee { Id = 1, Name = "Chris", Specialty = "HVAC"},
+    new Employee { Id = 2, Name = "Donald", Specialty = "Plumbing"}
+};
+List<ServiceTicket> serviceTickets = new List<ServiceTicket> {
+    new ServiceTicket { Id = 1, CustomerId = 1, EmployeeId = 2, Description = "Leaky faucet", Emergency = true, DateCompleted = DateTime.Now},
+    new ServiceTicket { Id = 3, CustomerId = 3, Description = "Power outage", Emergency = true },
+    new ServiceTicket { Id = 4, CustomerId = 1, EmployeeId = 2, Description = "Toilet clogged", Emergency = true },
+    new ServiceTicket { Id = 5, CustomerId = 2, Description = "Broken window", Emergency = false },
+    new ServiceTicket { Id = 1, CustomerId = 1, EmployeeId = 1, Description = "AC not working", Emergency = true }
+};
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,34 +36,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/servicetickets", () => 
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    return serviceTickets.Select(t => new ServiceTicketDTO
+    {
+        Id = t.Id,
+        CustomerId = t.CustomerId,
+        EmployeeId = t.EmployeeId,
+        Description = t.Description,
+        DateCompleted = t.DateCompleted
+    });
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/servicetickets/{id}", (int id) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-app.MapGet("/hello", () =>
-{
-    return "hello";
+    ServiceTicket serviceTicket = serviceTickets.FirstOrDefault(st => st.Id == id);
+  
+    return new ServiceTicketDTO
+    {
+        Id = serviceTicket.Id,
+        CustomerId = serviceTicket.CustomerId,
+        EmployeeId = serviceTicket.EmployeeId,
+        Description = serviceTicket.Description,
+        Emergency = serviceTicket.Emergency,
+        DateCompleted = serviceTicket.DateCompleted
+    };
 });
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// class Customer {}
